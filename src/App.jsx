@@ -20,14 +20,30 @@ const products = productsFromServer.map(product => {
   };
 });
 
-function filterProducts(selectedUser) {
-  return products.filter(product => product.user.name === selectedUser);
+function filterProducts(selectedUser, query) {
+  let result = [...products];
+
+  if (selectedUser) {
+    result = products.filter(product => product.user.name === selectedUser)
+  }
+
+  if (query) {
+    result = result.filter(product => {
+      const name = product.name.toLowerCase().trim();
+      const normalizedQuery = query.toLowerCase().trim();
+
+      return name.includes(normalizedQuery);
+    });
+  }
+
+  return result;
 }
 
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState('');
-  const filteredProducts =
-    selectedUser !== '' ? filterProducts(selectedUser) : products;
+  const [query, setQuery] = useState('');
+
+  const filteredProducts = filterProducts(selectedUser, query);
 
   return (
     <div className="section">
@@ -67,7 +83,8 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={query}
+                  onChange={event => setQuery(event.currentTarget.value)}
                 />
 
                 <span className="icon is-left">
@@ -76,11 +93,14 @@ export const App = () => {
 
                 <span className="icon is-right">
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
+                  {query && (
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={() => setQuery('')}
+                    />
+                  )}
                 </span>
               </p>
             </div>
@@ -90,7 +110,6 @@ export const App = () => {
                 href="#/"
                 data-cy="AllCategories"
                 className="button is-success mr-6 is-outlined"
-                // onClick={setSelectedUser('')}
               >
                 All
               </a>
